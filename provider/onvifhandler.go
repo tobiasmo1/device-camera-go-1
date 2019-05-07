@@ -63,6 +63,11 @@ const (
 // getOnvifCameraDetails populates CameraInfo structure for ONVIF compliant cameras
 // nolint: gocyclo
 func (p *CameraDiscoveryProvider) getOnvifCameraDetails(addr string, credentialsPath string) (CameraInfo, error) {
+
+	// For demo only, imagine populating camera with a service user 'operator'
+	// Client would then be made aware of the camera credentials or by retrieving user/pass from Vault?
+	injectRtspCredentials := true
+	var tempUser, tempPass string
 	//Getting an camera instance
 	p.lc.Trace(fmt.Sprintf("Invoking ONVIF.NewDevice"))
 	dev, err := goonvif.NewDevice(addr)
@@ -74,6 +79,8 @@ func (p *CameraDiscoveryProvider) getOnvifCameraDetails(addr string, credentials
 	if cameraUser, cameraPassword, err2 := readCredentialsFromFile(credentialsPath); err2 == nil {
 		//Authorization
 		dev.Authenticate(cameraUser, cameraPassword)
+		tempUser = cameraUser
+		tempPass = cameraPassword
 	} else {
 		p.lc.Error(fmt.Sprintf("Problem reading credentials from file"))
 		return CameraInfo{}, err2
@@ -152,6 +159,9 @@ func (p *CameraDiscoveryProvider) getOnvifCameraDetails(addr string, credentials
 			}
 			if uriresponse, err := dev.CallMethod(uri); err == nil {
 				rtspPath = p.getRTSPPath(uriresponse)
+				if injectRtspCredentials {
+					rtspPath = strings.Replace(rtspPath, "rtsp://", "rtsp://"+tempUser+":"+tempPass+"@", -1)
+				}
 			} else {
 				p.lc.Error(err.Error())
 			}

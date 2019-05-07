@@ -34,4 +34,4 @@ update:
 	dep ensure -update
 
 docker:
-	docker build . --build-arg http_proxy=$(HTTP_PROXY) --build-arg https_proxy=$(HTTPS_PROXY) --tag device-camera-go:develop
+	docker build . --build-arg http_proxy=$(HTTP_PROXY) --build-arg https_proxy=$(HTTPS_PROXY) --tag device-camera-go:develop_obj
